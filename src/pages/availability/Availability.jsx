@@ -49,15 +49,12 @@ function Availability() {
   }
 
   async function handleSave(records) {
-    console.log("handleSave()");
     console.log(records);
   
     try {
       setLoading(true);
   
       const result = await saveAvailability(records);
-  
-      console.log("Supabase Result:", result);
   
       await loadAvailability();
   
@@ -70,8 +67,6 @@ function Availability() {
       setLoading(false);
     }
   }
-
-  console.log("AUTH EMPLOYEE:", employee);
 
   return (
     <Layout>

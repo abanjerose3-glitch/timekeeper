@@ -20,7 +20,6 @@ function AvailabilityTable({
   }) {
   const [search, setSearch] = useState("");
 
-  console.log("ON EDIT PROP:", onEdit);
 
   function getMonday(dateString) {
     // Parse YYYY-MM-DD without timezone conversion

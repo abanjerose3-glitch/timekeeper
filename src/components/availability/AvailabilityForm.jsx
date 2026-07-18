@@ -14,10 +14,6 @@ function AvailabilityForm({
     loading = false,
   }) {
   
-  console.log("ROLE:", role);
-console.log("employeeId prop:", employeeId);
-
-
   const [employees, setEmployees] = useState([]);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
 
@@ -203,8 +199,6 @@ console.log("employeeId prop:", employeeId);
           : null,
       notes,
     }));
-
-    console.table(payload);
 
     await onSave(payload);
   }
