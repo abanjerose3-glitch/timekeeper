@@ -1,40 +1,45 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 
-import { useAuth } from "../../context/AuthContext";
 import { getEmployees } from "../../services/employee/employeeService";
 
 function AvailabilityForm({
-  employeeId,
-  onSave,
-  loading = false,
-}) {
-  const { role } = useAuth();
+    employeeId,
+    role,
+    editingWeek,
+    setEditingWeek,
+    onSave,
+    loading = false,
+  }) {
+  
+  console.log("ROLE:", role);
+console.log("employeeId prop:", employeeId);
+
 
   const [employees, setEmployees] = useState([]);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
 
-  const initialForm = {
-    employee_id: "",
-    availability_date: "",
-    status: "Available",
-    start_time: "",
-    end_time: "",
-    notes: "",
-  };
+  const [selectedEmployee, setSelectedEmployee] = useState(employeeId || "");
+  const [weekStarting, setWeekStarting] = useState("");
+  const [notes, setNotes] = useState("");
+  const [records, setRecords] = useState([]);
 
-  const [form, setForm] = useState(initialForm);
+  const statuses = [
+    "Available",
+    "Off",
+    "Leave",
+    "Holiday",
+    "Training",
+    "Work From Home",
+  ];
 
   useEffect(() => {
     if (role === "Admin") {
       loadEmployees();
     } else {
-      setForm((prev) => ({
-        ...prev,
-        employee_id: employeeId || "",
-      }));
+      setSelectedEmployee(employeeId || "");
     }
   }, [role, employeeId]);
 
@@ -46,83 +51,169 @@ function AvailabilityForm({
 
       setEmployees(data || []);
 
-      if (data?.length) {
-        setForm((prev) => ({
-          ...prev,
-          employee_id: data[0].id,
-        }));
+      if (data?.length > 0) {
+        setSelectedEmployee(data[0].id);
       }
-    } catch (err) {
-      console.error(err);
     } finally {
       setLoadingEmployees(false);
     }
   }
 
-  function handleChange(field, value) {
-    setForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  function getMonday(date) {
+    const d = new Date(date);
+
+    const day = d.getDay();
+
+    const diff = day === 0 ? -6 : 1 - day;
+
+    d.setDate(d.getDate() + diff);
+
+    return d;
+  }
+
+  const week = useMemo(() => {
+    if (!weekStarting) return [];
+
+    const monday = getMonday(weekStarting);
+
+    const days = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ];
+
+    return days.map((day, index) => {
+      const current = new Date(monday);
+
+      current.setDate(monday.getDate() + index);
+
+      return {
+        day,
+        availability_date: current.toISOString().split("T")[0],
+        status: "Available",
+        start_time: "08:00",
+        end_time: "17:00",
+      };
+    });
+  }, [weekStarting]);
+
+  useEffect(() => {
+    setRecords(week);
+  }, [week]);
+
+  useEffect(() => {
+    if (!editingWeek) return;
+  
+    setSelectedEmployee(editingWeek.employee_id || employeeId);
+    setWeekStarting(editingWeek.week);
+    setNotes(editingWeek.notes || "");
+  
+    const newRecords = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ].map((day) => {
+      const record = editingWeek.days[day];
+  
+      return {
+        day,
+        availability_date:
+          record?.availability_date || "",
+        status:
+          record?.status || "Available",
+        start_time:
+          record?.start_time || "08:00",
+        end_time:
+          record?.end_time || "17:00",
+      };
+    });
+  
+    setRecords(newRecords);
+  
+  }, [editingWeek, employeeId]);
+
+  function updateRecord(index, field, value) {
+    setRecords((prev) =>
+      prev.map((record, i) =>
+        i === index
+          ? {
+              ...record,
+              [field]: value,
+            }
+          : record
+      )
+    );
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (
-      form.status === "Available" &&
-      form.start_time &&
-      form.end_time &&
-      form.end_time <= form.start_time
-    ) {
-      alert("End time must be later than start time.");
+    if (!selectedEmployee) {
+      alert("Please select an employee.");
       return;
     }
-    console.log(form);
-    await onSave([
-      {
-        employee_id: form.employee_id,
-        availability_date: form.availability_date,
-        status: form.status,
-        start_time:
-          form.status === "Available"
-            ? form.start_time || null
-            : null,
-        end_time:
-          form.status === "Available"
-            ? form.end_time || null
-            : null,
-        notes: form.notes.trim() || null,
-      },
-    ]);
 
-    setForm((prev) => ({
-      ...initialForm,
-      employee_id: prev.employee_id,
+    if (records.length !== 7) {
+      alert("Please select a week first.");
+      return;
+    }
+
+    for (const record of records) {
+      if (
+        record.status === "Available" &&
+        record.end_time <= record.start_time
+      ) {
+        alert(
+          `${record.day}: End time must be later than Start time.`
+        );
+        return;
+      }
+    }
+
+    const payload = records.map((record) => ({
+      employee_id: selectedEmployee,
+      availability_date: record.availability_date,
+      status: record.status,
+      start_time:
+        record.status === "Available"
+          ? record.start_time
+          : null,
+      end_time:
+        record.status === "Available"
+          ? record.end_time
+          : null,
+      notes,
     }));
-  }
 
-  const disableTime = form.status !== "Available";
+    await onSave(payload);
+  }
 
   return (
     <form
       onSubmit={handleSubmit}
       className="space-y-6 rounded-xl border bg-white p-6 shadow-sm"
     >
-      {role === "Admin" && (
+         {role === "Admin" && (
         <div>
           <label className="mb-2 block text-sm font-medium">
             Employee
           </label>
 
           <select
-            className="w-full rounded-md border bg-white px-3 py-2 text-sm"
-            value={form.employee_id}
+            className="w-full rounded-md border bg-white px-3 py-2"
+            value={selectedEmployee}
             disabled={loadingEmployees}
             onChange={(e) =>
-              handleChange("employee_id", e.target.value)
+              setSelectedEmployee(e.target.value)
             }
-            required
           >
             {employees.map((emp) => (
               <option
@@ -136,77 +227,91 @@ function AvailabilityForm({
         </div>
       )}
 
-      <div className="grid gap-5 md:grid-cols-2">
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Date
-          </label>
+      <div>
+        <label className="mb-2 block text-sm font-medium">
+          Week Starting
+        </label>
 
-          <Input
-            type="date"
-            value={form.availability_date}
-            onChange={(e) =>
-              handleChange(
-                "availability_date",
-                e.target.value
-              )
-            }
-            required
-          />
-        </div>
+        <Input
+          type="date"
+          value={weekStarting}
+          onChange={(e) =>
+            setWeekStarting(e.target.value)
+          }
+          required
+        />
+      </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Status
-          </label>
-
-          <select
-            className="w-full rounded-md border bg-white px-3 py-2 text-sm"
-            value={form.status}
-            onChange={(e) =>
-              handleChange("status", e.target.value)
-            }
+      <div className="space-y-4">
+        {records.map((record, index) => (
+          <div
+            key={record.availability_date}
+            className="grid grid-cols-5 gap-4 rounded-lg border p-4"
           >
-            <option value="Available">Available</option>
-            <option value="Off">Off</option>
-            <option value="Leave">Leave</option>
-            <option value="Holiday">Holiday</option>
-            <option value="Training">Training</option>
-            <option value="Work From Home">
-              Work From Home
-            </option>
-          </select>
-        </div>
+            <div>
+              <div className="font-medium">
+                {record.day}
+              </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Start Time
-          </label>
+              <div className="text-xs text-slate-500">
+                {record.availability_date}
+              </div>
+            </div>
 
-          <Input
-            type="time"
-            disabled={disableTime}
-            value={form.start_time}
-            onChange={(e) =>
-              handleChange("start_time", e.target.value)
-            }
-          />
-        </div>
+            <select
+              className="rounded-md border px-3 py-2"
+              value={record.status}
+              onChange={(e) =>
+                updateRecord(
+                  index,
+                  "status",
+                  e.target.value
+                )
+              }
+            >
+              {statuses.map((status) => (
+                <option
+                  key={status}
+                  value={status}
+                >
+                  {status}
+                </option>
+              ))}
+            </select>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            End Time
-          </label>
+            <Input
+              type="time"
+              disabled={record.status !== "Available"}
+              value={record.start_time}
+              onChange={(e) =>
+                updateRecord(
+                  index,
+                  "start_time",
+                  e.target.value
+                )
+              }
+            />
 
-          <Input
-            type="time"
-            disabled={disableTime}
-            value={form.end_time}
-            onChange={(e) =>
-              handleChange("end_time", e.target.value)
-            }
-          />
-        </div>
+            <Input
+              type="time"
+              disabled={record.status !== "Available"}
+              value={record.end_time}
+              onChange={(e) =>
+                updateRecord(
+                  index,
+                  "end_time",
+                  e.target.value
+                )
+              }
+            />
+
+            <div className="flex items-center justify-center">
+              <span className="rounded-full bg-slate-100 px-3 py-2 text-xs">
+                {record.status}
+              </span>
+            </div>
+          </div>
+        ))}
       </div>
 
       <div>
@@ -215,13 +320,13 @@ function AvailabilityForm({
         </label>
 
         <textarea
-          rows={3}
-          className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-          placeholder="Optional notes..."
-          value={form.notes}
+          rows={4}
+          value={notes}
           onChange={(e) =>
-            handleChange("notes", e.target.value)
+            setNotes(e.target.value)
           }
+          className="w-full rounded-md border px-3 py-2"
+          placeholder="Optional notes for this week..."
         />
       </div>
 
@@ -232,7 +337,7 @@ function AvailabilityForm({
         >
           {loading
             ? "Saving..."
-            : "Save Availability"}
+            : "Save Week"}
         </Button>
       </div>
     </form>

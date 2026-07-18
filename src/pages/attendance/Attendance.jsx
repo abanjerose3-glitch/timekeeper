@@ -65,36 +65,37 @@ function Attendance() {
     }
   }
 
-  const filteredRecords = records.filter((record) => {
-    const matchesSearch =
-      role === "Admin"
-        ? record.employees?.full_name
+  const filteredRecords =
+  role !== "Admin"
+    ? records
+    : records.filter((record) => {
+        const matchesSearch =
+          record.employees?.full_name
             ?.toLowerCase()
-            .includes(search.toLowerCase())
-        : true;
+            .includes(search.toLowerCase());
 
-    let matchesStatus = true;
+        let matchesStatus = true;
 
-    if (status === "present") {
-      matchesStatus =
-        record.time_in &&
-        !record.time_out &&
-        (!record.break_out || record.break_in);
-    }
+        if (status === "present") {
+          matchesStatus =
+            record.time_in &&
+            !record.time_out &&
+            (!record.break_out || record.break_in);
+        }
 
-    if (status === "break") {
-      matchesStatus =
-        record.break_out &&
-        !record.break_in &&
-        !record.time_out;
-    }
+        if (status === "break") {
+          matchesStatus =
+            record.break_out &&
+            !record.break_in &&
+            !record.time_out;
+        }
 
-    if (status === "timedout") {
-      matchesStatus = !!record.time_out;
-    }
+        if (status === "timedout") {
+          matchesStatus = !!record.time_out;
+        }
 
-    return matchesSearch && matchesStatus;
-  });
+        return matchesSearch && matchesStatus;
+      });
 
   function handleExport() {
     exportAttendance(filteredRecords);
@@ -135,14 +136,17 @@ function Attendance() {
           )}
         </div>
 
-        <AttendanceToolbar
-          search={search}
-          setSearch={setSearch}
-          status={status}
-          setStatus={setStatus}
-          onExport={handleExport}
-          isAdmin={role === "Admin"}
-        />
+
+        {role === "Admin" && (
+  <AttendanceToolbar
+    search={search}
+    setSearch={setSearch}
+    status={status}
+    setStatus={setStatus}
+    onExport={handleExport}
+    isAdmin={true}
+  />
+)}
 
         <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
           <table className="w-full">

@@ -69,32 +69,41 @@ export async function getEmployeeAvailability(employeeId) {
   return data;
 }
 
-// Save availability
+// Save weekly availability
 export async function saveAvailability(records) {
-  console.log("========== SAVE AVAILABILITY ==========");
-  console.log("Records to save:", records);
-
-  const { data, error } = await supabase
-    .from("availability")
-    .insert(records)
-    .select(`
-      *,
-      employees (
-        id,
-        employee_code,
-        full_name,
-        role
-      )
-    `);
-
-  console.log("Saved Data:", data);
-  console.log("Supabase Error:", error);
-  console.log("======================================");
-
-  if (error) throw error;
-
-  return data;
-}
+    if (!records.length) return [];
+  
+    const employeeId = records[0].employee_id;
+  
+    const dates = records.map((r) => r.availability_date);
+  
+    // Remove existing records for the selected week
+    const { error: deleteError } = await supabase
+      .from("availability")
+      .delete()
+      .eq("employee_id", employeeId)
+      .in("availability_date", dates);
+  
+    if (deleteError) throw deleteError;
+  
+    // Insert fresh week
+    const { data, error } = await supabase
+      .from("availability")
+      .insert(records)
+      .select(`
+        *,
+        employees (
+          id,
+          employee_code,
+          full_name,
+          role
+        )
+      `);
+  
+    if (error) throw error;
+  
+    return data;
+  }
 
 // Delete availability
 export async function deleteAvailability(id) {

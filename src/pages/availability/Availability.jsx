@@ -19,46 +19,64 @@ function Availability() {
   const { role, employee } = useAuth();
 
   const [availability, setAvailability] = useState([]);
-  const [selectedEmployee, setSelectedEmployee] = useState("all");
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  const [editingWeek, setEditingWeek] = useState(null);
 
   useEffect(() => {
     if (employee) {
       loadAvailability();
     }
-  }, [employee]);
+  }, [employee, role]);
 
   async function loadAvailability() {
     try {
-        const data =
+      setLoading(true);
+
+      const data =
         role === "Admin"
           ? await getAvailability()
           : await getMyAvailability();
-      
-      console.log(data);
 
       setAvailability(data || []);
     } catch (error) {
-        console.error("SAVE ERROR:", error);
-        toast.error(error.message);
-      }
+      console.error(error);
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleSave(records) {
+    console.log("handleSave()");
+    console.log(records);
+  
     try {
-      await saveAvailability(records);
-
-      toast.success("Availability saved.");
-
-      loadAvailability();
+      setLoading(true);
+  
+      const result = await saveAvailability(records);
+  
+      console.log("Supabase Result:", result);
+  
+      await loadAvailability();
+  
+      toast.success("Weekly availability saved.");
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to save availability.");
+      console.error("SAVE ERROR:", error);
+  
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
     }
   }
+
+  console.log("AUTH EMPLOYEE:", employee);
 
   return (
     <Layout>
       <div className="space-y-6">
+
         <div>
           <h1 className="text-3xl font-bold">
             {role === "Admin"
@@ -67,23 +85,26 @@ function Availability() {
           </h1>
 
           <p className="mt-1 text-slate-500">
-            {role === "Admin"
-              ? "Manage employee availability."
-              : "Manage your availability."}
+            Set employee weekly availability.
           </p>
         </div>
 
         <AvailabilityForm
-          employeeId={employee?.id}
-          onSave={handleSave}
-        />
+  employeeId={employee?.id}
+  role={role}
+  editingWeek={editingWeek}
+  setEditingWeek={setEditingWeek}
+  loading={loading}
+  onSave={handleSave}
+/>
 
-        <AvailabilityTable
-          data={availability}
-          isAdmin={role === "Admin"}
-          selectedEmployee={selectedEmployee}
-          onEmployeeChange={setSelectedEmployee}
-        />
+<AvailabilityTable
+  data={availability}
+  loading={loading}
+  isAdmin={role === "Admin"}
+  onEdit={setEditingWeek}
+/>
+
       </div>
     </Layout>
   );

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 
 import {
   Table,
@@ -12,77 +13,50 @@ import {
 } from "../ui/table";
 
 function AvailabilityTable({
-  data,
-  isAdmin,
-  selectedEmployee,
-  onEmployeeChange,
-}) {
+    data,
+    isAdmin,
+    loading,
+    onEdit,
+  }) {
   const [search, setSearch] = useState("");
 
-  const employees = useMemo(() => {
-    const map = new Map();
+  console.log("ON EDIT PROP:", onEdit);
 
-    data.forEach((row) => {
-      if (row.employees) {
-        map.set(row.employees.id, row.employees);
-      }
-    });
+  function getMonday(date) {
+    const d = new Date(date);
 
-    return [...map.values()].sort((a, b) =>
-      a.full_name.localeCompare(b.full_name)
-    );
-  }, [data]);
+    const day = d.getDay();
 
-  const filteredData = useMemo(() => {
-    let rows = data;
+    const diff =
+      day === 0
+        ? -6
+        : 1 - day;
 
-    if (isAdmin && selectedEmployee !== "all") {
-      rows = rows.filter(
-        (row) => row.employee_id === selectedEmployee
-      );
-    }
+    d.setDate(d.getDate() + diff);
 
-    if (search.trim()) {
-      const keyword = search.toLowerCase();
-
-      rows = rows.filter((row) => {
-        return (
-          row.employees?.full_name
-            ?.toLowerCase()
-            .includes(keyword) ||
-          row.status
-            ?.toLowerCase()
-            .includes(keyword) ||
-          row.notes
-            ?.toLowerCase()
-            .includes(keyword)
-        );
-      });
-    }
-
-    return rows;
-  }, [data, search, isAdmin, selectedEmployee]);
+    return d.toISOString().split("T")[0];
+  }
 
   function formatDate(date) {
-    if (!date) return "-";
-
-    return new Date(date).toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    return new Date(date).toLocaleDateString(
+      "en-US",
+      {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }
+    );
   }
 
   function formatTime(time) {
     if (!time) return "-";
 
-    const [hour, minute] = time.split(":");
+    const [h, m] = time.split(":");
 
     const d = new Date();
 
-    d.setHours(hour);
-    d.setMinutes(minute);
+    d.setHours(h);
+    d.setMinutes(m);
 
     return d.toLocaleTimeString([], {
       hour: "numeric",
@@ -113,8 +87,8 @@ function AvailabilityTable({
 
     return (
       <span
-        className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
-          styles[status] ||
+        className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+          styles[status] ??
           "bg-slate-100 text-slate-700"
         }`}
       >
@@ -123,51 +97,79 @@ function AvailabilityTable({
     );
   }
 
+  const grouped = useMemo(() => {
+    const map = new Map();
+
+    data.forEach((row) => {
+      const monday = getMonday(
+        row.availability_date
+      );
+
+      const key = `${row.employee_id}_${monday}`;
+
+      if (!map.has(key)) {
+        map.set(key, {
+            employee_id: row.employee_id,
+          
+            employee:
+              row.employees?.full_name ??
+              "-",
+          
+            week: monday,
+          
+            notes: row.notes ?? "",
+          
+            days: {
+              Monday: null,
+              Tuesday: null,
+              Wednesday: null,
+              Thursday: null,
+              Friday: null,
+              Saturday: null,
+              Sunday: null,
+            },
+          });
+      }
+
+      const weekday = new Date(
+        row.availability_date
+      ).toLocaleDateString("en-US", {
+        weekday: "long",
+      });
+
+      map.get(key).days[weekday] = row;
+    });
+
+    return [...map.values()].filter(
+      (week) => {
+        if (!search.trim()) return true;
+
+        return week.employee
+          .toLowerCase()
+          .includes(search.toLowerCase());
+      }
+    );
+  }, [data, search]);
+
   return (
     <div className="space-y-4">
 
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-
-        <Input
-          placeholder="Search..."
-          className="max-w-sm"
-          value={search}
-          onChange={(e) =>
-            setSearch(e.target.value)
-          }
-        />
-
-        {isAdmin && (
-          <select
-            value={selectedEmployee}
-            onChange={(e) =>
-              onEmployeeChange(e.target.value)
-            }
-            className="rounded-md border px-3 py-2 text-sm"
-          >
-            <option value="all">
-              All Employees
-            </option>
-
-            {employees.map((emp) => (
-              <option
-                key={emp.id}
-                value={emp.id}
-              >
-                {emp.full_name}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
+{isAdmin && (
+  <Input
+    placeholder="Search employee..."
+    className="max-w-sm"
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+  />
+)}
 
       <div className="overflow-hidden rounded-xl border bg-white">
 
-        <div className="max-h-[600px] overflow-auto">
+        <div className="max-h-[650px] overflow-auto">
 
           <Table>
 
-            <TableHeader className="sticky top-0 bg-white z-10">
+            <TableHeader className="sticky top-0 z-10 bg-white">
 
               <TableRow>
 
@@ -177,15 +179,31 @@ function AvailabilityTable({
                   </TableHead>
                 )}
 
-                <TableHead>Date</TableHead>
+                <TableHead>
+                  Week Starting
+                </TableHead>
 
-                <TableHead>Status</TableHead>
+                <TableHead>Monday</TableHead>
 
-                <TableHead>Start</TableHead>
+                <TableHead>Tuesday</TableHead>
 
-                <TableHead>End</TableHead>
+                <TableHead>Wednesday</TableHead>
 
-                <TableHead>Notes</TableHead>
+                <TableHead>Thursday</TableHead>
+
+                <TableHead>Friday</TableHead>
+
+                <TableHead>Saturday</TableHead>
+
+                <TableHead>Sunday</TableHead>
+
+                <TableHead>
+                  Notes
+                </TableHead>
+
+                <TableHead>
+  Actions
+</TableHead>
 
               </TableRow>
 
@@ -193,59 +211,110 @@ function AvailabilityTable({
 
             <TableBody>
 
-              {filteredData.length === 0 ? (
+              {loading ? (
 
                 <TableRow>
 
                   <TableCell
-                    colSpan={isAdmin ? 6 : 5}
+                    colSpan={isAdmin ? 10 : 9}
+                    className="h-32 text-center"
+                  >
+                    Loading...
+                  </TableCell>
+
+                </TableRow>
+
+              ) : grouped.length === 0 ? (
+
+                <TableRow>
+
+                  <TableCell
+                    colSpan={isAdmin ? 10 : 9}
                     className="h-32 text-center text-slate-500"
                   >
-                    No availability records found.
+                    No weekly availability found.
                   </TableCell>
 
                 </TableRow>
 
               ) : (
 
-                filteredData.map((row) => (
+                grouped.map((week, index) => (
 
                   <TableRow
-                    key={row.id}
+                    key={index}
                     className="hover:bg-slate-50"
                   >
 
                     {isAdmin && (
-                      <TableCell className="font-medium">
-                        {row.employees?.full_name}
+                      <TableCell className="font-medium whitespace-nowrap">
+                        {week.employee}
                       </TableCell>
                     )}
 
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       {formatDate(
-                        row.availability_date
+                        week.week
                       )}
                     </TableCell>
 
-                    <TableCell>
-                      {badge(row.status)}
-                    </TableCell>
+                    {[
+                      "Monday",
+                      "Tuesday",
+                      "Wednesday",
+                      "Thursday",
+                      "Friday",
+                      "Saturday",
+                      "Sunday",
+                    ].map((day) => {
+                      const record =
+                        week.days[day];
 
-                    <TableCell>
-                      {formatTime(
-                        row.start_time
-                      )}
-                    </TableCell>
+                      return (
+                        <TableCell
+                          key={day}
+                          className="min-w-[170px]"
+                        >
+                          {record ? (
+                            <div className="space-y-2">
 
-                    <TableCell>
-                      {formatTime(
-                        row.end_time
-                      )}
-                    </TableCell>
+                              {badge(
+                                record.status
+                              )}
 
-                    <TableCell className="max-w-xs truncate">
-                      {row.notes || "-"}
-                    </TableCell>
+                              {record.status ===
+                                "Available" && (
+                                <div className="text-xs text-slate-500">
+                                  {formatTime(
+                                    record.start_time
+                                  )}{" "}
+                                  -{" "}
+                                  {formatTime(
+                                    record.end_time
+                                  )}
+                                </div>
+                              )}
+
+                            </div>
+                          ) : (
+                            "-"
+                          )}
+                        </TableCell>
+                      );
+                    })}
+
+<TableCell>
+  <Button
+    variant="outline"
+    size="sm"
+    onClick={() => {
+        console.log("EDIT WEEK:", week);
+        onEdit(week);
+      }}
+  >
+    Edit
+  </Button>
+</TableCell>
 
                   </TableRow>
 

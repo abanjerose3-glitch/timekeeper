@@ -1,7 +1,7 @@
 import { useAuth } from "../../context/AuthContext";
 
 function Header() {
-  const { user } = useAuth();
+    const { user, employee, role } = useAuth();
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -23,13 +23,13 @@ function Header() {
       </div>
 
       <div className="text-right">
-        <p className="text-sm font-medium text-slate-900">
-          {user?.email ?? "Guest"}
-        </p>
+      <p className="text-sm font-medium text-slate-900">
+  {employee?.full_name || user?.email || "Guest"}
+</p>
 
-        <p className="text-xs text-slate-500">
-          Logged In
-        </p>
+<p className="text-xs text-slate-500">
+  {role || "Logged In"}
+</p>
       </div>
     </header>
   );

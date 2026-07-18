@@ -17,17 +17,32 @@ export function AuthProvider({ children }) {
 
   async function loadUser() {
     try {
+      console.log("Loading user...");
+  
       const { user, profile } = await getProfile();
 
+console.log("USER ID:", user?.id);
+console.log("Current profile:", profile);
+  
       setUser(user);
       setProfile(profile);
-
+  
       if (user) {
-        const employee = await getEmployeeByUserId(user.id);
-        setEmployee(employee);
+        console.log("Looking for employee:", user.id);
+  
+        console.log("USER:", user);
+
+const employee = await getEmployeeByUserId(user.id);
+
+console.log("EMPLOYEE:", employee);
+
+setEmployee(employee);
+      } else {
+        console.log("NO USER");
       }
     } catch (error) {
-      console.error(error);
+      console.error("AUTH ERROR:", error);
+  
       setUser(null);
       setProfile(null);
       setEmployee(null);

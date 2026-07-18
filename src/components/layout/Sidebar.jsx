@@ -14,6 +14,8 @@ import {
   import { useAuth } from "../../context/AuthContext";
   import { signOut } from "../../services/authService";
   
+  import fscLogo from "../../assets/fsc-logo.jpg";
+  
   function Sidebar() {
     const navigate = useNavigate();
     const { role } = useAuth();
@@ -69,18 +71,30 @@ import {
   
     return (
       <aside className="flex h-screen w-72 flex-col border-r border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-8 py-7">
-          <h1 className="text-2xl font-bold text-slate-900">
-            TimeKeeper
-          </h1>
+        {/* Company Branding */}
+<div className="border-b border-slate-200 px-6 py-6">
+  <div className="flex flex-col items-center">
+
+    <img
+      src={fscLogo}
+      alt="Food Systems Collective"
+      className="h-20 w-auto object-contain"
+    />
+
+    <h1 className="mt-4 text-lg font-semibold text-slate-900 text-center leading-tight">
+      Food Systems Collective
+    </h1>
+
+    <p className="mt-2 text-sm text-slate-500">
+      {role === "Admin"
+        ? "Admin Portal"
+        : "Employee Portal"}
+    </p>
+
+  </div>
+</div>
   
-          <p className="mt-1 text-sm text-slate-500">
-            {role === "Admin"
-              ? "Administrator"
-              : "Employee Portal"}
-          </p>
-        </div>
-  
+        {/* Menu */}
         <nav className="flex-1 space-y-2 p-5">
           {menus.map((menu) => {
             const Icon = menu.icon;
@@ -104,6 +118,7 @@ import {
           })}
         </nav>
   
+        {/* Logout */}
         <div className="border-t border-slate-200 p-5">
           <button
             onClick={handleLogout}

@@ -6,7 +6,10 @@ export async function getCurrentUser() {
     error,
   } = await supabase.auth.getUser();
 
-  if (error) throw error;
+  // No active session is not an application error.
+  if (error) {
+    return null;
+  }
 
   return user;
 }
@@ -14,11 +17,18 @@ export async function getCurrentUser() {
 export async function getProfile() {
   const user = await getCurrentUser();
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .maybeSingle();
+if (!user) {
+  return {
+    user: null,
+    profile: null,
+  };
+}
+
+const { data, error } = await supabase
+  .from("profiles")
+  .select("*")
+  .eq("id", user.id)
+  .maybeSingle();
 
   if (error) throw error;
 

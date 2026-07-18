@@ -14,11 +14,17 @@ export async function getEmployees() {
 
 // Get employee by authenticated user ID
 export async function getEmployeeByUserId(authId) {
+
+  console.log("Searching auth_id:", authId);
+
   const { data, error } = await supabase
     .from("employees")
     .select("*")
     .eq("auth_id", authId)
     .maybeSingle();
+
+  console.log("Employee:", data);
+  console.log("Error:", error);
 
   if (error) throw error;
 

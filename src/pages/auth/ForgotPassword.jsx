@@ -1,34 +1,28 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-import { signIn } from "../../services/authService";
-import { useAuth } from "../../context/AuthContext";
-import PasswordInput from "../../components/ui/PasswordInput";
+import { Link } from "react-router-dom";
+import { resetPassword } from "../../services/authService";
 
 import rosetteLogo from "../../assets/rosette-logo.png";
 
-function Login() {
-  const navigate = useNavigate();
-  const { refreshUser } = useAuth();
-
+function ForgotPassword() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   async function handleSubmit(e) {
     e.preventDefault();
-
+  
     setLoading(true);
     setError("");
-
+    setMessage("");
+  
     try {
-      await signIn(email, password);
-
-      await refreshUser();
-
-      navigate("/", { replace: true });
+      await resetPassword(email);
+  
+      setMessage(
+        "If an account exists for that email, a password reset link has been sent."
+      );
     } catch (err) {
       setError(err.message);
     } finally {
@@ -44,15 +38,15 @@ function Login() {
           <img
             src={rosetteLogo}
             alt="Rosette"
-            className="mb-5 h-24 w-auto object-contain"
+            className="mb-5 h-24 w-auto"
           />
 
-          <h1 className="text-4xl font-bold tracking-wide text-slate-900">
-            Rosette
+          <h1 className="text-3xl font-bold text-slate-900">
+            Forgot Password
           </h1>
 
           <p className="mt-2 text-center text-sm text-slate-500">
-            Employee Time Management System
+            Enter your email address and we'll send you a password reset link.
           </p>
         </div>
 
@@ -67,48 +61,41 @@ function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-600"
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-600"
               required
             />
           </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              Password
-            </label>
+          {message && (
+  <div className="rounded-xl bg-green-50 p-3 text-sm text-green-700">
+    {message}
+  </div>
+)}
 
-            <PasswordInput
-  value={password}
-  onChange={(e) => setPassword(e.target.value)}
-  required
-/>
-          </div>
-
-          {error && (
+{error && (
   <div className="rounded-xl bg-red-50 p-3 text-sm text-red-600">
     {error}
   </div>
 )}
-
-<div className="flex justify-end">
-  <button
-    type="button"
-    onClick={() => navigate("/forgot-password")}
-    className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
-  >
-    Forgot Password?
-  </button>
-</div>
 
 <button
   type="submit"
   disabled={loading}
   className="w-full rounded-xl bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-700 disabled:opacity-60"
 >
-  {loading ? "Signing In..." : "Sign In"}
+  {loading ? "Sending..." : "Send Reset Link"}
 </button>
 
         </form>
+
+        <div className="mt-6 text-center">
+          <Link
+            to="/login"
+            className="text-sm font-medium text-blue-600 hover:underline"
+          >
+            ← Back to Login
+          </Link>
+        </div>
 
         <div className="mt-10 border-t pt-5 text-center">
           <p className="text-xs text-slate-400">
@@ -121,4 +108,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default ForgotPassword;

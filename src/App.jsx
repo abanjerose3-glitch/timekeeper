@@ -12,6 +12,8 @@ import Reports from "./pages/reports/Reports";
 import Settings from "./pages/settings/Settings";
 import AdminRoute from "./components/routes/AdminRoute";
 import NotFound from "./pages/NotFound";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 
 import ProtectedRoute from "./components/routes/ProtectedRoute";
 
@@ -19,7 +21,9 @@ function App() {
   return (
     <Routes>
 
-      <Route path="/login" element={<Login />} />
+<Route path="/login" element={<Login />} />
+<Route path="/forgot-password" element={<ForgotPassword />} />
+<Route path="/reset-password" element={<ResetPassword />} />
 
       <Route
         path="/"
