@@ -14,7 +14,7 @@ import {
   import { useAuth } from "../../context/AuthContext";
   import { signOut } from "../../services/authService";
   
-  import fscLogo from "../../assets/fsc-logo.jpg";
+  import fscLogo from "../../assets/FSC-logo.jpg";
   
   function Sidebar() {
     const navigate = useNavigate();
