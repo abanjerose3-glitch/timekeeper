@@ -59,23 +59,30 @@ console.log("employeeId prop:", employeeId);
     }
   }
 
-  function getMonday(date) {
-    const d = new Date(date);
-
-    const day = d.getDay();
-
-    const diff = day === 0 ? -6 : 1 - day;
-
+  function getMonday(dateString) {
+    const [year, month, day] = dateString
+      .split("-")
+      .map(Number);
+  
+    const d = new Date(year, month - 1, day);
+  
+    const dayOfWeek = d.getDay();
+  
+    const diff =
+      dayOfWeek === 0
+        ? -6
+        : 1 - dayOfWeek;
+  
     d.setDate(d.getDate() + diff);
-
+  
     return d;
   }
 
   const week = useMemo(() => {
     if (!weekStarting) return [];
-
+  
     const monday = getMonday(weekStarting);
-
+  
     const days = [
       "Monday",
       "Tuesday",
@@ -85,15 +92,19 @@ console.log("employeeId prop:", employeeId);
       "Saturday",
       "Sunday",
     ];
-
+  
     return days.map((day, index) => {
       const current = new Date(monday);
-
+  
       current.setDate(monday.getDate() + index);
-
+  
+      const yyyy = current.getFullYear();
+      const mm = String(current.getMonth() + 1).padStart(2, "0");
+      const dd = String(current.getDate()).padStart(2, "0");
+  
       return {
         day,
-        availability_date: current.toISOString().split("T")[0],
+        availability_date: `${yyyy}-${mm}-${dd}`,
         status: "Available",
         start_time: "08:00",
         end_time: "17:00",
@@ -192,6 +203,8 @@ console.log("employeeId prop:", employeeId);
           : null,
       notes,
     }));
+
+    console.table(payload);
 
     await onSave(payload);
   }

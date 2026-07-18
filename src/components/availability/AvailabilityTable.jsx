@@ -22,19 +22,23 @@ function AvailabilityTable({
 
   console.log("ON EDIT PROP:", onEdit);
 
-  function getMonday(date) {
-    const d = new Date(date);
-
-    const day = d.getDay();
-
-    const diff =
-      day === 0
-        ? -6
-        : 1 - day;
-
+  function getMonday(dateString) {
+    // Parse YYYY-MM-DD without timezone conversion
+    const [year, month, day] = dateString.split("-").map(Number);
+  
+    const d = new Date(year, month - 1, day);
+  
+    const dayOfWeek = d.getDay();
+  
+    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  
     d.setDate(d.getDate() + diff);
-
-    return d.toISOString().split("T")[0];
+  
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+  
+    return `${yyyy}-${mm}-${dd}`;
   }
 
   function formatDate(date) {
@@ -50,18 +54,32 @@ function AvailabilityTable({
 
   function formatTime(time) {
     if (!time) return "-";
-
+  
     const [h, m] = time.split(":");
-
+  
     const d = new Date();
-
-    d.setHours(h);
-    d.setMinutes(m);
-
+  
+    d.setHours(Number(h));
+    d.setMinutes(Number(m));
+    d.setSeconds(0);
+  
     return d.toLocaleTimeString([], {
       hour: "numeric",
       minute: "2-digit",
     });
+  }
+
+  function formatDate(dateString) {
+    const [year, month, day] = dateString.split("-").map(Number);
+  
+    return new Date(year, month - 1, day).toLocaleDateString(
+      "en-US",
+      {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }
+    );
   }
 
   function badge(status) {
@@ -131,24 +149,28 @@ function AvailabilityTable({
           });
       }
 
-      const weekday = new Date(
-        row.availability_date
-      ).toLocaleDateString("en-US", {
-        weekday: "long",
-      });
-
-      map.get(key).days[weekday] = row;
+      const [year, month, day] = row.availability_date
+      .split("-")
+      .map(Number);
+    
+    const weekday = new Date(
+      year,
+      month - 1,
+      day
+    ).toLocaleDateString("en-US", {
+      weekday: "long",
     });
+    map.get(key).days[weekday] = row;
 
-    return [...map.values()].filter(
-      (week) => {
-        if (!search.trim()) return true;
+}); // <-- ISARA ANG data.forEach()
 
-        return week.employee
-          .toLowerCase()
-          .includes(search.toLowerCase());
-      }
-    );
+return [...map.values()].filter((week) => {
+  if (!search.trim()) return true;
+
+  return week.employee
+    .toLowerCase()
+    .includes(search.toLowerCase());
+});
   }, [data, search]);
 
   return (
