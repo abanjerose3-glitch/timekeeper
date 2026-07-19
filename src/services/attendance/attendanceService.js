@@ -11,16 +11,17 @@ async function getCurrentEmployee() {
   }
 
   const { data, error } = await supabase
-    .from("employees")
-    .select("*")
-    .eq("auth_id", session.user.id)
-    .maybeSingle();
+  .from("employees")
+  .select("*")
+  .eq("auth_id", session.user.id)
+  .maybeSingle();
 
-  if (error) throw error;
+if (error) throw error;
 
-  return data;
+console.log("Current Employee:", data);
+
+return data;
 }
-
 // ==============================
 // ADMIN / REPORTS
 // ==============================
@@ -75,16 +76,26 @@ export async function getTodayAttendance() {
 
   const today = getToday(employee.timezone);
 
-const { data, error } = await supabase
-  .from("attendance")
-  .select("*")
-  .eq("employee_id", employee.id)
-  .eq("attendance_date", today)
-  .maybeSingle();
+  console.log("=================================");
+  console.log("Employee ID:", employee.id);
+  console.log("Employee Name:", employee.full_name);
+  console.log("Employee Timezone:", employee.timezone);
+  console.log("Today:", today);
 
-if (error) throw error;
+  const { data, error } = await supabase
+    .from("attendance")
+    .select("*")
+    .eq("employee_id", employee.id)
+    .eq("attendance_date", today)
+    .maybeSingle();
 
-return data;
+  console.log("Attendance Result:", data);
+  console.log("Attendance Error:", error);
+  console.log("=================================");
+
+  if (error) throw error;
+
+  return data;
 }
 
 // Clock In

@@ -16,13 +16,13 @@ function Settings() {
       subtitle="Manage your account and system preferences."
     >
       <div className="space-y-6">
-        <AccountForm />
+      <AccountForm />
 
-        <ChangePasswordForm />
+<ChangePasswordForm />
 
-        {role === "Admin" && (
-          <SettingsForm />
-        )}
+{false && (
+  <SettingsForm />
+)}
       </div>
     </Layout>
   );

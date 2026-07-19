@@ -200,19 +200,31 @@ function Attendance() {
 )}
 
                     <td className="p-4">
-                      {formatTime(record.time_in)}
+                    {formatTime(
+  record.time_in,
+  record.employees?.timezone
+)}
                     </td>
 
                     <td className="p-4">
-                      {formatTime(record.break_out)}
+                    {formatTime(
+  record.break_out,
+  record.employees?.timezone
+)}
                     </td>
 
                     <td className="p-4">
-                      {formatTime(record.break_in)}
+                    {formatTime(
+  record.break_in,
+  record.employees?.timezone
+)}
                     </td>
 
                     <td className="p-4">
-                      {formatTime(record.time_out)}
+                    {formatTime(
+  record.time_out,
+  record.employees?.timezone
+)}
                     </td>
 
                     <td className="p-4">

@@ -35,12 +35,13 @@ export async function getMyAttendanceRecords() {
     .from("attendance")
     .select(`
       *,
-      employees!attendance_employee_id_fkey (
-        id,
-        employee_code,
-        full_name,
-        email
-      )
+     employees!attendance_employee_id_fkey (
+  id,
+  employee_code,
+  full_name,
+  email,
+  timezone
+)
     `)
     .eq("employee_id", employee.id)
     .order("attendance_date", { ascending: false })
