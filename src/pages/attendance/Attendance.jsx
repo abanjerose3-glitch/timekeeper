@@ -8,6 +8,10 @@ import Layout from "../../components/layout/Layout";
 import AttendanceToolbar from "../../components/attendance/AttendanceToolbar";
 import AttendanceStatusBadge from "../../components/attendance/AttendanceStatusBadge";
 import AdjustmentDialog from "../../components/attendance/AdjustmentDialog";
+import {
+    formatTime,
+    formatDate,
+  } from "../../utils/dateTime";
 
 import { Button } from "../../components/ui/button";
 
@@ -20,14 +24,6 @@ import {
 
 import { exportAttendance } from "../../services/exportService";
 
-function formatTime(value) {
-  if (!value) return "-";
-
-  return new Date(value).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 function Attendance() {
   const navigate = useNavigate();
@@ -152,11 +148,15 @@ function Attendance() {
           <table className="w-full">
             <thead className="bg-slate-50">
               <tr>
-                {role === "Admin" && (
-                  <th className="p-4 text-left">
-                    Employee
-                  </th>
-                )}
+              <th className="p-4 text-left">
+  Date
+</th>
+
+{role === "Admin" && (
+  <th className="p-4 text-left">
+    Employee
+  </th>
+)}
 
                 <th className="p-4 text-left">
                   Time In
@@ -189,11 +189,15 @@ function Attendance() {
                     key={record.id}
                     className="border-t hover:bg-slate-50"
                   >
-                    {role === "Admin" && (
-                      <td className="p-4 font-medium">
-                        {record.employees?.full_name}
-                      </td>
-                    )}
+                    <td className="p-4 whitespace-nowrap">
+  {formatDate(record.attendance_date)}
+</td>
+
+{role === "Admin" && (
+  <td className="p-4 font-medium">
+    {record.employees?.full_name}
+  </td>
+)}
 
                     <td className="p-4">
                       {formatTime(record.time_in)}
@@ -237,7 +241,7 @@ function Attendance() {
               ) : (
                 <tr>
                   <td
-                    colSpan={role === "Admin" ? 8 : 7}
+                    colSpan={role === "Admin" ? 9 : 8}
                     className="p-10 text-center text-slate-500"
                   >
                     No attendance records found.

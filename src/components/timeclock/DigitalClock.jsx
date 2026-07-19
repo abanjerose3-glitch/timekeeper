@@ -18,11 +18,12 @@ function DigitalClock() {
     year: "numeric",
   });
 
-  const time = now.toLocaleTimeString("en-US", {
+  const time = new Intl.DateTimeFormat("en-US", {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-  });
+    hour12: true,
+  }).format(now);
 
   return (
     <div className="rounded-2xl border bg-white p-8 text-center shadow-sm">

@@ -6,45 +6,11 @@ import {
     TableHeader,
     TableRow,
   } from "../ui/table";
-  
-  function formatDate(date) {
-    if (!date) return "-";
-  
-    return new Date(date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  }
-  
-  function formatTime(value) {
-    if (!value) return "-";
-  
-    try {
-      // Kung full timestamp na galing Supabase
-      if (value.includes("T") || value.includes("-")) {
-        return new Date(value).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      }
-  
-      // Kung TIME column lang (08:30:00)
-      const [hour = 0, minute = 0] = value.split(":");
-  
-      const date = new Date();
-      date.setHours(Number(hour));
-      date.setMinutes(Number(minute));
-      date.setSeconds(0);
-  
-      return date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
-      return "-";
-    }
-  }
+
+  import {
+    formatDate,
+    formatTime,
+  } from "../../utils/dateTime";
   
   function getStatus(record) {
     if (record.time_out) return "Timed Out";

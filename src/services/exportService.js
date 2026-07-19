@@ -1,5 +1,10 @@
 import * as XLSX from "xlsx";
 
+import {
+  formatDate,
+  formatTime,
+} from "../utils/dateTime";
+
 function getStatus(record) {
   if (
     record.time_in &&
@@ -22,21 +27,6 @@ function getStatus(record) {
   }
 
   return "Absent";
-}
-
-function formatDate(value) {
-  if (!value) return "-";
-
-  return new Date(value).toLocaleDateString();
-}
-
-function formatTime(value) {
-  if (!value) return "-";
-
-  return new Date(value).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 export function exportAttendance(records) {

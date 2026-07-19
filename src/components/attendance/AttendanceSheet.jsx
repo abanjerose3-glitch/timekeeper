@@ -6,15 +6,7 @@ import {
 } from "@/components/ui/sheet";
 
 import AttendanceStatusBadge from "./AttendanceStatusBadge";
-
-function formatTime(value) {
-  if (!value) return "-";
-
-  return new Date(value).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import { formatTime } from "../../utils/dateTime";
 
 function AttendanceSheet({
   open,

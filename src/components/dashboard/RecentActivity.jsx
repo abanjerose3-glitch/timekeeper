@@ -10,6 +10,10 @@ import {
 import { Badge } from "../ui/badge";
 
 import { useAuth } from "../../context/AuthContext";
+import {
+  formatDate,
+  formatTime,
+} from "../../utils/dateTime";
 
 import {
   getRecentAttendance,
@@ -79,25 +83,6 @@ function RecentActivity() {
         month: "short",
         day: "numeric",
         year: "numeric",
-      });
-    } catch {
-      return "-";
-    }
-  }
-
-  function formatTime(time) {
-    if (!time) return "-";
-
-    try {
-      const date =
-        time.includes("T") || time.includes("-")
-          ? new Date(time)
-          : new Date(`2000-01-01T${time}`);
-
-      return date.toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
       });
     } catch {
       return "-";

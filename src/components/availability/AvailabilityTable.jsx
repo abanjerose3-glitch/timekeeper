@@ -12,6 +12,8 @@ import {
   TableRow,
 } from "../ui/table";
 
+import { formatTime } from "../../utils/dateTime";
+
 function AvailabilityTable({
     data,
     isAdmin,
@@ -49,23 +51,6 @@ function AvailabilityTable({
         year: "numeric",
       }
     );
-  }
-
-  function formatTime(time) {
-    if (!time) return "-";
-  
-    const [h, m] = time.split(":");
-  
-    const d = new Date();
-  
-    d.setHours(Number(h));
-    d.setMinutes(Number(m));
-    d.setSeconds(0);
-  
-    return d.toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "2-digit",
-    });
   }
 
   function formatDate(dateString) {
