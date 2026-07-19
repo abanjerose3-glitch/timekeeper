@@ -1,5 +1,6 @@
 import supabase from "../supabase";
 import { getCurrentSession } from "../authService";
+import { getToday } from "../../utils/dateTime";
 
 // Get logged in employee
 async function getCurrentEmployee() {
@@ -72,25 +73,25 @@ export async function getTodayAttendance() {
     return null;
   }
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = getToday(employee.timezone);
 
-  const { data, error } = await supabase
-    .from("attendance")
-    .select("*")
-    .eq("employee_id", employee.id)
-    .eq("attendance_date", today)
-    .maybeSingle();
+const { data, error } = await supabase
+  .from("attendance")
+  .select("*")
+  .eq("employee_id", employee.id)
+  .eq("attendance_date", today)
+  .maybeSingle();
 
-  if (error) throw error;
+if (error) throw error;
 
-  return data;
+return data;
 }
 
 // Clock In
 export async function clockIn() {
   const employee = await getCurrentEmployee();
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = getToday(employee.timezone);
 
   const existing = await getTodayAttendance();
 
