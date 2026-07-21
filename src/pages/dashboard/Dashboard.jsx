@@ -16,31 +16,28 @@ function Dashboard() {
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold">
-            {role === "Admin"
-              ? "Dashboard"
-              : "My Dashboard"}
+            {role === "Admin" ? "Dashboard" : "My Dashboard"}
           </h1>
 
           <p className="mt-2 text-slate-500">
             Welcome back
-            {employee?.full_name
-              ? `, ${employee.full_name}`
-              : ""}
-            . Here's today's overview.
+            {employee?.full_name ? `, ${employee.full_name}` : ""}.
+            Here's today's overview.
           </p>
         </div>
 
         <DashboardStats />
 
         <div className="space-y-6">
-  <AttendanceChart />
+          <AttendanceChart />
 
-  <TeamAvailability />   {/* NEW */}
+          {/* Employee Portal Only */}
+          {role !== "Admin" && <TeamAvailability />}
 
-  <RecentActivity />
+          <RecentActivity />
 
-  <TodayAvailability />
-</div>
+          <TodayAvailability />
+        </div>
       </div>
     </Layout>
   );
