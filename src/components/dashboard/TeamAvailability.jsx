@@ -39,10 +39,9 @@ function TeamAvailability() {
         👥 Team Availability
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
         {/* Working */}
-        <div>
+        <div className="flex flex-col min-h-[260px]">
           <h3 className="font-semibold text-green-600 mb-3">
             🟢 Working ({team.working.length})
           </h3>
@@ -52,7 +51,7 @@ function TeamAvailability() {
               No employees working.
             </p>
           ) : (
-            <ul className="space-y-2">
+            <ul className="space-y-2 flex-1">
               {team.working.map((employee) => (
                 <li
                   key={employee.id}
@@ -66,7 +65,7 @@ function TeamAvailability() {
         </div>
 
         {/* On Break */}
-        <div>
+        <div className="flex flex-col min-h-[260px]">
           <h3 className="font-semibold text-yellow-600 mb-3">
             🟡 On Break ({team.onBreak.length})
           </h3>
@@ -76,7 +75,7 @@ function TeamAvailability() {
               No employees on break.
             </p>
           ) : (
-            <ul className="space-y-2">
+            <ul className="space-y-2 flex-1">
               {team.onBreak.map((employee) => (
                 <li
                   key={employee.id}
@@ -90,7 +89,7 @@ function TeamAvailability() {
         </div>
 
         {/* Offline */}
-        <div>
+        <div className="flex flex-col min-h-[260px]">
           <h3 className="font-semibold text-slate-600 mb-3">
             ⚫ Offline ({team.offline.length})
           </h3>
@@ -100,19 +99,29 @@ function TeamAvailability() {
               No employees offline.
             </p>
           ) : (
-            <ul className="space-y-2">
-              {team.offline.map((employee) => (
-                <li
-                  key={employee.id}
-                  className="text-sm bg-slate-100 px-3 py-2 rounded-lg"
-                >
-                  {employee.full_name}
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="space-y-2 flex-1">
+                {team.offline.slice(0, 4).map((employee) => (
+                  <li
+                    key={employee.id}
+                    className="text-sm bg-slate-100 px-3 py-2 rounded-lg"
+                  >
+                    {employee.full_name}
+                  </li>
+                ))}
+              </ul>
+
+              {team.offline.length > 4 && (
+                <div className="mt-4 pt-3 border-t border-slate-200">
+                  <p className="inline-flex items-center text-sm font-medium text-slate-500">
+                    +{team.offline.length - 4} more employees
+                    <span className="ml-1">→</span>
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
-
       </div>
     </div>
   );
