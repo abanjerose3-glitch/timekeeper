@@ -14,14 +14,15 @@ export async function getDashboardStats() {
 
   if (employeeError) throw employeeError;
 
-  const today = new Date()
-    .toISOString()
-    .split("T")[0];
+  const today = new Date().toLocaleDateString("en-CA");
 
   const { data, error } = await supabase
     .from("attendance")
     .select("*")
     .eq("attendance_date", today);
+
+    console.log("Today:", today);
+    console.log("Attendance rows:", data);
 
   if (error) throw error;
 
@@ -76,10 +77,7 @@ export async function getEmployeeDashboardStats() {
     };
   }
 
-  const today = new Date();
-  const todayString = today
-    .toISOString()
-    .split("T")[0];
+  const today = new Date().toLocaleDateString("en-CA");
 
   const weekStart = new Date(today);
   weekStart.setDate(

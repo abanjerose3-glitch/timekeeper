@@ -4,6 +4,7 @@ import DashboardStats from "../../components/dashboard/DashboardStats";
 import AttendanceChart from "../../components/dashboard/AttendanceChart";
 import RecentActivity from "../../components/dashboard/RecentActivity";
 import TodayAvailability from "../../components/dashboard/TodayAvailability";
+import TeamAvailability from "../../components/dashboard/TeamAvailability";
 
 import { useAuth } from "../../context/AuthContext";
 
@@ -32,12 +33,14 @@ function Dashboard() {
         <DashboardStats />
 
         <div className="space-y-6">
-          <AttendanceChart />
+  <AttendanceChart />
 
-          <RecentActivity />
+  <TeamAvailability />   {/* NEW */}
 
-          <TodayAvailability />
-        </div>
+  <RecentActivity />
+
+  <TodayAvailability />
+</div>
       </div>
     </Layout>
   );

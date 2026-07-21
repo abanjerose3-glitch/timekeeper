@@ -215,3 +215,58 @@ export async function clockOut() {
 
   return data;
 }
+// ==============================
+// TEAM AVAILABILITY
+// ==============================
+
+export async function getTeamAvailability() {
+  const { data, error } = await supabase
+    .from("employees")
+    .select(`
+      id,
+      full_name,
+      attendance(*)
+    `);
+
+  if (error) throw error;
+
+  const today = getToday("Asia/Manila");
+
+  const working = [];
+  const onBreak = [];
+  const offline = [];
+
+  data.forEach((employee) => {
+    const attendance = employee.attendance.find(
+      (a) => a.attendance_date === today
+    );
+
+    if (!attendance) {
+      offline.push(employee);
+      return;
+    }
+
+    if (attendance.time_out) {
+      offline.push(employee);
+      return;
+    }
+
+    if (attendance.break_out && !attendance.break_in) {
+      onBreak.push(employee);
+      return;
+    }
+
+    if (attendance.time_in) {
+      working.push(employee);
+      return;
+    }
+
+    offline.push(employee);
+  });
+
+  return {
+    working,
+    onBreak,
+    offline,
+  };
+}
